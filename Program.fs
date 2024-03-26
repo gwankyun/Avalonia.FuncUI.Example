@@ -10,6 +10,7 @@ open Avalonia.FuncUI.DSL
 open Avalonia.Layout
 open System.Text.Json
 open System.IO
+open TextCopy
 
 module Main =
     type Extension =
@@ -19,7 +20,21 @@ module Main =
             IsX64: bool
         }
 
-    let stack (list: IWritable<Extension list>) (i: Extension) =
+    module File =
+        let exists path =
+            File.Exists(path)
+
+        let writeAllText path contents =
+            File.WriteAllText(path, contents)
+
+        let readAllText path =
+            File.ReadAllText(path)
+
+    module String =
+        let split (separator: string) (str: string) =
+            str.Split(separator)
+
+    let stack (list: IWritable<Extension list>) (i: Extension) (result: IWritable<string>) =
         Component.create (i.Name, fun ctx ->
             let text = ctx.useState i.Name
             let version = ctx.useState i.Version
@@ -29,7 +44,7 @@ module Main =
                 StackPanel.children [
                     TextBox.create [
                         TextBox.text text.Current
-                        TextBox.width 200
+                        TextBox.width 400
                         TextBox.onTextChanged (fun t -> text.Set t)
                     ]
                     TextBox.create [
@@ -59,15 +74,17 @@ module Main =
                     Button.create [
                         Button.content "生成"
                         Button.onClick (fun _ ->
-                            let testArray = text.Current.Split(".")
+                            let testArray = text.Current |> String.split "."
                             let url =
-                                sprintf "https://marketplace.visualstudio.com/_apis/public/gallery/publishers/%s/vsextensions/%s/%s/vspackage" testArray[0] testArray[1] version.Current
-                            let result =
+                                let host = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers"
+                                sprintf "%s/%s/vsextensions/%s/%s/vspackage" host testArray[0] testArray[1] version.Current
+                            let result_ =
                                 match isX64.Current with
                                 | true ->
                                     sprintf "%s?targetPlatform=win32-x64" url
                                 | false -> sprintf "%s" url
-                            printfn "%s" result
+                            result.Set result_
+                            ClipboardService.SetText result_
                         )
                     ]
                 ]
@@ -82,10 +99,14 @@ module Main =
         Component(fun ctx ->
             let state = ctx.useState 0
             let list: IWritable<Extension list> = ctx.useState []
-            let id = ctx.useState 0
+            // let id = ctx.useState 0
+            let result = ctx.useState ""
             ctx.useEffect (
                 (fun _ ->
-                    let json = File.ReadAllText(jsonPath)
+                    if File.exists jsonPath |> not then
+                        let json = JsonSerializer.Serialize(list.Current)
+                        File.writeAllText jsonPath json
+                    let json = File.readAllText jsonPath
                     list.Set (JsonSerializer.Deserialize<Extension list>(json))),
                     [EffectTrigger.AfterInit]
             )
@@ -94,7 +115,7 @@ module Main =
                 StackPanel.children [
                     ListBox.create [
                         ListBox.viewItems (
-                            list.Current |> List.map (fun i -> stack list i)
+                            list.Current |> List.map (fun i -> stack list i result)
                         )
                     ]
                     StackPanel.create [
@@ -109,10 +130,19 @@ module Main =
                                 Button.content "保存"
                                 Button.onClick (fun _ ->
                                     let json = JsonSerializer.Serialize(list.Current)
-                                    File.WriteAllText(jsonPath, json))
+                                    File.writeAllText jsonPath json)
                             ]
                         ]
-                    ]   
+                    ]
+                    StackPanel.create [
+                        StackPanel.orientation Orientation.Horizontal
+                        StackPanel.children [
+                            TextBox.create [
+                                TextBox.text result.Current
+                                TextBox.width 1000
+                            ]
+                        ]
+                    ]
                 ]
             ]
         )
