@@ -24,6 +24,7 @@ module Main =
             let text = ctx.useState i.Name
             let version = ctx.useState i.Version
             let isX64 = ctx.useState i.IsX64
+            let color = ctx.useState "blue"
             let currentItem () =
                 { Name = text.Current; Version = version.Current; IsX64 = isX64.Current }
             let save () =
@@ -33,57 +34,66 @@ module Main =
                 | Some(index) ->
                     list.Set (List.updateAt index (currentItem ()) current)
                 | None -> ()
-            StackPanel.create [
-                StackPanel.orientation Orientation.Horizontal
-                StackPanel.onLostFocus (fun _ -> save ()) // 失焦就保存
-                StackPanel.children [
-                    TextBox.create [
-                        TextBox.text text.Current
-                        TextBox.width 400
-                        TextBox.onTextChanged (fun t -> text.Set t)
+                color.Set "green"
+            Border.create [
+                Border.borderBrush color.Current
+                Border.borderThickness 1
+                Border.child (
+                    StackPanel.create [
+                        StackPanel.orientation Orientation.Horizontal
+                        StackPanel.onLostFocus (fun _ -> save ()) // 失焦就保存
+                        StackPanel.children [
+                            TextBox.create [
+                                TextBox.text text.Current
+                                TextBox.width 400
+                                TextBox.onTextChanged (fun t -> text.Set t)
+                            ]
+                            TextBox.create [
+                                TextBox.text version.Current
+                                TextBox.width 200
+                                TextBox.onTextChanged (fun t -> version.Set t)
+                            ]
+                            ToggleSwitch.create [
+                                ToggleSwitch.isChecked isX64.Current
+                                ToggleSwitch.onChecked (fun _ -> isX64.Set true)
+                                ToggleSwitch.onUnchecked (fun _ -> isX64.Set false)
+                            ]
+                            Button.create [
+                                Button.content "刪除"
+                                Button.onClick (fun _ ->
+                                    list.Set (List.filter (fun j -> j.Name <> i.Name) list.Current))
+                            ]
+                            Button.create [
+                                Button.content "更新"
+                                Button.onClick (fun _ -> save ())
+                            ]
+                            Button.create [
+                                Button.content "生成"
+                                Button.onClick (fun _ ->
+                                    let testArray = text.Current |> String.split "."
+                                    let url =
+                                        let host = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers"
+                                        sprintf "%s/%s/vsextensions/%s/%s/vspackage" host testArray[0] testArray[1] version.Current
+                                    let result_ =
+                                        match isX64.Current with
+                                        | true ->
+                                            sprintf "%s?targetPlatform=win32-x64" url
+                                        | false -> sprintf "%s" url
+                                    result.Set result_
+                                    ClipboardService.SetText result_
+                                )
+                            ]
+                        ]
                     ]
-                    TextBox.create [
-                        TextBox.text version.Current
-                        TextBox.width 200
-                        TextBox.onTextChanged (fun t -> version.Set t)
-                    ]
-                    ToggleSwitch.create [
-                        ToggleSwitch.isChecked isX64.Current
-                        ToggleSwitch.onChecked (fun _ -> isX64.Set true)
-                        ToggleSwitch.onUnchecked (fun _ -> isX64.Set false)
-                    ]
-                    Button.create [
-                        Button.content "刪除"
-                        Button.onClick (fun _ ->
-                            list.Set (List.filter (fun j -> j.Name <> i.Name) list.Current))
-                    ]
-                    Button.create [
-                        Button.content "更新"
-                        Button.onClick (fun _ -> save ())
-                    ]
-                    Button.create [
-                        Button.content "生成"
-                        Button.onClick (fun _ ->
-                            let testArray = text.Current |> String.split "."
-                            let url =
-                                let host = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers"
-                                sprintf "%s/%s/vsextensions/%s/%s/vspackage" host testArray[0] testArray[1] version.Current
-                            let result_ =
-                                match isX64.Current with
-                                | true ->
-                                    sprintf "%s?targetPlatform=win32-x64" url
-                                | false -> sprintf "%s" url
-                            result.Set result_
-                            ClipboardService.SetText result_
-                        )
-                    ]
-                ]
+                )
             ]
+
         )
 
     let jsonPath =
-        let currentDir = Directory.current
-        Path.join currentDir "data.json"
+        let baseDir = System.AppContext.BaseDirectory
+        printf "baseDir: %s" baseDir
+        Path.join baseDir "data.json"
 
     let view () =
         Component(fun ctx ->
@@ -103,11 +113,6 @@ module Main =
 
             StackPanel.create [
                 StackPanel.children [
-                    ListBox.create [
-                        ListBox.viewItems (
-                            list.Current |> List.map (fun i -> stack list i result)
-                        )
-                    ]
                     StackPanel.create [
                         StackPanel.orientation Orientation.Horizontal
                         StackPanel.children [
@@ -126,6 +131,11 @@ module Main =
                                 TextBox.width 1000
                             ]
                         ]
+                    ]
+                    ListBox.create [
+                        ListBox.viewItems (
+                            list.Current |> List.map (fun i -> stack list i result)
+                        )
                     ]
                 ]
             ]
