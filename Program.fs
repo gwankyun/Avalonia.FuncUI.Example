@@ -8,9 +8,8 @@ open Avalonia.Controls
 open Avalonia.FuncUI
 open Avalonia.FuncUI.DSL
 open Avalonia.Layout
-open System.Text.Json
-open System.IO
 open TextCopy
+open Common
 
 module Main =
     type Extension =
@@ -20,27 +19,23 @@ module Main =
             IsX64: bool
         }
 
-    module File =
-        let exists path =
-            File.Exists(path)
-
-        let writeAllText path contents =
-            File.WriteAllText(path, contents)
-
-        let readAllText path =
-            File.ReadAllText(path)
-
-    module String =
-        let split (separator: string) (str: string) =
-            str.Split(separator)
-
     let stack (list: IWritable<Extension list>) (i: Extension) (result: IWritable<string>) =
         Component.create (i.Name, fun ctx ->
             let text = ctx.useState i.Name
             let version = ctx.useState i.Version
             let isX64 = ctx.useState i.IsX64
+            let currentItem () =
+                { Name = text.Current; Version = version.Current; IsX64 = isX64.Current }
+            let save () =
+                let current = list.Current
+                let idx = List.tryFindIndex (fun x -> x.Name = i.Name) current
+                match idx with
+                | Some(index) ->
+                    list.Set (List.updateAt index (currentItem ()) current)
+                | None -> ()
             StackPanel.create [
                 StackPanel.orientation Orientation.Horizontal
+                StackPanel.onLostFocus (fun _ -> save ()) // 失焦就保存
                 StackPanel.children [
                     TextBox.create [
                         TextBox.text text.Current
@@ -64,12 +59,7 @@ module Main =
                     ]
                     Button.create [
                         Button.content "更新"
-                        Button.onClick (fun _ ->
-                            let current = list.Current
-                            let idx = List.findIndex (fun x -> x.Name = i.Name) current
-                            list.Set (List.updateAt idx
-                                { Name = text.Current; Version = version.Current; IsX64 = isX64.Current }
-                                current))
+                        Button.onClick (fun _ -> save ())
                     ]
                     Button.create [
                         Button.content "生成"
@@ -92,22 +82,22 @@ module Main =
         )
 
     let jsonPath =
-        let currentDir = Directory.GetCurrentDirectory()
-        Path.Join(currentDir, "data.json")
+        let currentDir = Directory.current
+        Path.join currentDir "data.json"
 
     let view () =
         Component(fun ctx ->
-            let state = ctx.useState 0
             let list: IWritable<Extension list> = ctx.useState []
-            // let id = ctx.useState 0
             let result = ctx.useState ""
+            let saveJson () =
+                let json = JsonSerializer.serialize list.Current
+                File.writeAllText jsonPath json
             ctx.useEffect (
                 (fun _ ->
                     if File.exists jsonPath |> not then
-                        let json = JsonSerializer.Serialize(list.Current)
-                        File.writeAllText jsonPath json
+                        saveJson ()
                     let json = File.readAllText jsonPath
-                    list.Set (JsonSerializer.Deserialize<Extension list>(json))),
+                    list.Set <| JsonSerializer.deserialize json),
                     [EffectTrigger.AfterInit]
             )
 
@@ -124,19 +114,13 @@ module Main =
                             Button.create [
                                 Button.content "新增"
                                 Button.onClick (fun _ ->
-                                    list.Set ({ Name = ""; Version = ""; IsX64 = false } :: list.Current))
+                                    list.Set <| { Name = ""; Version = ""; IsX64 = false } :: list.Current)
                             ]
                             Button.create [
                                 Button.content "保存"
                                 Button.onClick (fun _ ->
-                                    let json = JsonSerializer.Serialize(list.Current)
-                                    File.writeAllText jsonPath json)
+                                    saveJson ())
                             ]
-                        ]
-                    ]
-                    StackPanel.create [
-                        StackPanel.orientation Orientation.Horizontal
-                        StackPanel.children [
                             TextBox.create [
                                 TextBox.text result.Current
                                 TextBox.width 1000
