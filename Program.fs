@@ -25,6 +25,7 @@ module Main =
             let version = ctx.useState i.Version
             let isX64 = ctx.useState i.IsX64
             let color = ctx.useState "blue"
+            let thickness = ctx.useState 1
             let currentItem () =
                 { Name = text.Current; Version = version.Current; IsX64 = isX64.Current }
             let save () =
@@ -35,9 +36,10 @@ module Main =
                     list.Set (List.updateAt index (currentItem ()) current)
                 | None -> ()
                 color.Set "green"
+                thickness.Set 1
             Border.create [
-                Border.borderBrush color.Current
-                Border.borderThickness 1
+                // Border.borderBrush color.Current
+                // Border.borderThickness thickness.Current
                 Border.child (
                     StackPanel.create [
                         StackPanel.orientation Orientation.Horizontal
@@ -91,8 +93,7 @@ module Main =
         )
 
     let jsonPath =
-        let baseDir = System.AppContext.BaseDirectory
-        printf "baseDir: %s" baseDir
+        let baseDir = Directory.baseDir
         Path.join baseDir "data.json"
 
     let view () =

@@ -23,6 +23,9 @@ module String =
 module Directory =
     let current =
         Directory.GetCurrentDirectory()
+    
+    let baseDir =
+        System.AppContext.BaseDirectory
 
 module JsonSerializer =
     let serialize value =
