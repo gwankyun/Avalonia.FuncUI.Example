@@ -70,16 +70,21 @@ module VSCode =
                                 Button.content "生成"
                                 Button.onClick (fun _ ->
                                     let testArray = text.Current |> String.split "."
-                                    let url =
-                                        let host = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers"
-                                        sprintf "%s/%s/vsextensions/%s/%s/vspackage" host testArray[0] testArray[1] version.Current
-                                    let result_ =
-                                        match isX64.Current with
-                                        | true ->
-                                            sprintf "%s?targetPlatform=win32-x64" url
-                                        | false -> sprintf "%s" url
-                                    result.Set result_
-                                    ClipboardService.SetText result_
+                                    if (testArray |> Array.length) >= 2 then
+                                        let url =
+                                            let ver =
+                                                version.Current |> String.trimStart 'v'
+                                            let host = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers"
+                                            sprintf "%s/%s/vsextensions/%s/%s/vspackage" host testArray[0] testArray[1] ver
+                                        let result_ =
+                                            match isX64.Current with
+                                            | true ->
+                                                sprintf "%s?targetPlatform=win32-x64" url
+                                            | false -> sprintf "%s" url
+                                        result.Set result_
+                                        ClipboardService.SetText result_
+                                    else
+                                        ClipboardService.SetText ""
                                 )
                             ]
                         ]

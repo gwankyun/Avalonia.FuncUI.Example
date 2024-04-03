@@ -20,6 +20,9 @@ module String =
     let split (separator: string) (str: string) =
         str.Split separator
 
+    let trimStart (c: char) (s: string) =
+        s.TrimStart(c)
+
 module Directory =
     let current =
         Directory.GetCurrentDirectory()
