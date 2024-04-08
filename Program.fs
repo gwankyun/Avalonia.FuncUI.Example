@@ -38,7 +38,7 @@ module Main =
                 TabControl.tabStripPlacement Dock.Left
                 TabControl.viewItems [
                     TabItem.create [
-                        TabItem.header "Home"
+                        TabItem.header "VSCode"
                         TabItem.content (
                             StackPanel.create [
                                 StackPanel.children [
