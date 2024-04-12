@@ -4,7 +4,7 @@ open Avalonia.Controls
 open Avalonia.FuncUI
 open Avalonia.FuncUI.DSL
 open Avalonia.Layout
-
+open Avalonia.Controls.Primitives
 open TextCopy
 open Common
 
@@ -90,5 +90,63 @@ module VSCode =
                         ]
                     ]
                 )
+            ]
+        )
+
+    let jsonPath =
+        let baseDir = Directory.baseDir
+        Path.join baseDir "data.json"
+
+    let vscodeComponet () =
+        Component.create (
+            "vscodeComponet",
+            fun ctx ->
+            let list: IWritable<Extension list> = ctx.useState []
+            let result = ctx.useState ""
+            let saveJson () =
+                let json = JsonSerializer.serialize list.Current
+                File.writeAllText jsonPath json
+            ctx.useEffect (
+                (fun _ ->
+                    if File.exists jsonPath |> not then
+                        saveJson ()
+                    let json = File.readAllText jsonPath
+                    list.Set <| JsonSerializer.deserialize json),
+                    [EffectTrigger.AfterInit]
+            )
+            let newItem : Extension =  { Name = ""; Version = ""; IsX64 = false }
+
+            StackPanel.create [
+                StackPanel.children [
+                    StackPanel.create [
+                        StackPanel.orientation Orientation.Horizontal
+                        StackPanel.children [
+                            Button.create [
+                                Button.content "新增"
+                                Button.onClick (fun _ ->
+                                    list.Set <| newItem :: list.Current)
+                            ]
+                            Button.create [
+                                Button.content "保存"
+                                Button.onClick (fun _ ->
+                                    saveJson ())
+                            ]
+                            TextBox.create [
+                                TextBox.text result.Current
+                                TextBox.width 1000
+                            ]
+                        ]
+                    ]
+                    ListBox.create [
+                        ListBox.verticalScrollBarVisibility ScrollBarVisibility.Visible
+                        ListBox.horizontalScrollBarVisibility ScrollBarVisibility.Visible
+                        ListBox.horizontalAlignment HorizontalAlignment.Stretch
+                        ListBox.verticalAlignment VerticalAlignment.Stretch
+                        ListBox.viewItems (
+                            list.Current
+                            |> List.map (stack list result)
+                        )
+                    ]
+                ]
             ]
         )

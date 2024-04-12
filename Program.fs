@@ -9,80 +9,104 @@ open Avalonia.FuncUI
 open Avalonia.FuncUI.DSL
 open Avalonia.Layout
 open Avalonia.Controls.Primitives
+open Avalonia.Controls.ApplicationLifetimes
+open System.Collections.ObjectModel
+open Avalonia.Data
 // open Primitives
 open Common
 
+type Person (name, age, male) =
+    member val Name = name with get, set
+    member val Age = age with get, set
+    member val IsMale = male with get, set
+
+
+
 module Main =
-    let jsonPath =
-        let baseDir = Directory.baseDir
-        Path.join baseDir "data.json"
+    let gridComponent () =
+        Component.create ("gridComponent", fun ctx ->
+            let data = ctx.useState (
+                        ObservableCollection [
+                            Person("John", 20, true)
+                            Person("Jane", 21, false)
+                            Person("Bob", 22, true)
+                        ]
+                    )
+                    
+            let selectedItem = ctx.useState None
+
+            DockPanel.create [
+                DockPanel.children [
+                    TextBlock.create [
+                        TextBlock.dock Dock.Top
+                        TextBlock.margin 10
+                        TextBlock.text $"""Selected: {(selectedItem.Current |> Option.defaultValue (Person("", 0, false))).Name}"""
+                    ]
+                    DataGrid.create [
+                        DataGrid.dock Dock.Top
+                        DataGrid.isReadOnly false
+                        DataGrid.items data.Current
+                        DataGrid.onSelectedItemChanged (fun item ->
+                            (match box item with
+                            | null -> None
+                            | :? Person as i -> Some i
+                            | _ -> failwith "Something went horribly wrong!")
+                            |> selectedItem.Set)
+
+                        DataGrid.columns [
+                            DataGridTextColumn.create [
+                                DataGridTextColumn.header "Name"
+                                DataGridTextColumn.binding (Binding ("Name", BindingMode.TwoWay))
+                                DataGridTextColumn.width (DataGridLength(2, DataGridLengthUnitType.Star))
+                            ]
+                            DataGridTemplateColumn.create [
+                                DataGridTemplateColumn.header "Name"
+                                DataGridTemplateColumn.cellTemplate (
+                                    DataTemplateView<_>.create (fun (data: Person) ->
+                                        TextBlock.create [
+                                            TextBlock.text data.Name
+                                        ]
+                                    )
+                                )
+                                DataGridTemplateColumn.cellEditingTemplate (
+                                    DataTemplateView<_>.create (fun (data: Person) ->
+                                        TextBox.create [
+                                            TextBox.init (fun t ->
+                                                t.Bind(TextBox.TextProperty, Binding("Name", BindingMode.TwoWay)) |> ignore
+                                            )
+                                        ]
+                                    )
+                                )
+                            ]
+                            DataGridTextColumn.create [
+                                DataGridTextColumn.header "Age"
+                                DataGridTextColumn.binding (Binding "Age")
+                            ]
+                            DataGridCheckBoxColumn.create [
+                                DataGridCheckBoxColumn.header "IsMale"
+                                DataGridCheckBoxColumn.binding (Binding "IsMale")
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        )
 
     let view () =
         Component(fun ctx ->
-            let list: IWritable<VSCode.Extension list> = ctx.useState []
-            let result = ctx.useState ""
-            let saveJson () =
-                let json = JsonSerializer.serialize list.Current
-                File.writeAllText jsonPath json
-            ctx.useEffect (
-                (fun _ ->
-                    if File.exists jsonPath |> not then
-                        saveJson ()
-                    let json = File.readAllText jsonPath
-                    list.Set <| JsonSerializer.deserialize json),
-                    [EffectTrigger.AfterInit]
-            )
-            let newItem : VSCode.Extension =  { Name = ""; Version = ""; IsX64 = false }
-
             TabControl.create [
                 TabControl.tabStripPlacement Dock.Left
                 TabControl.viewItems [
                     TabItem.create [
                         TabItem.header "VSCode"
                         TabItem.content (
-                            StackPanel.create [
-                                StackPanel.children [
-                                    StackPanel.create [
-                                        StackPanel.orientation Orientation.Horizontal
-                                        StackPanel.children [
-                                            Button.create [
-                                                Button.content "新增"
-                                                Button.onClick (fun _ ->
-                                                    list.Set <| newItem :: list.Current)
-                                            ]
-                                            Button.create [
-                                                Button.content "保存"
-                                                Button.onClick (fun _ ->
-                                                    saveJson ())
-                                            ]
-                                            TextBox.create [
-                                                TextBox.text result.Current
-                                                TextBox.width 1000
-                                            ]
-                                        ]
-                                    ]
-                                    ListBox.create [
-                                        ListBox.verticalScrollBarVisibility ScrollBarVisibility.Visible
-                                        ListBox.horizontalScrollBarVisibility ScrollBarVisibility.Visible
-                                        ListBox.horizontalAlignment HorizontalAlignment.Stretch
-                                        ListBox.verticalAlignment VerticalAlignment.Stretch
-                                        ListBox.viewItems (
-                                            list.Current
-                                            |> List.map (VSCode.stack list result)
-                                        )
-                                    ]
-                                ]
-                            ]
+                            VSCode.vscodeComponet()
                         )
                     ]
                     TabItem.create [
                         TabItem.header "DataGrid"
                         TabItem.content (
-                            DataGrid.create [
-                                // DataGrid.con
-                                // datagridco
-                                // DataGrid.c
-                            ]
+                            gridComponent()
                         )
                     ]
                 ]
