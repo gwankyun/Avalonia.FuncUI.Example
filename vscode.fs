@@ -34,62 +34,68 @@ module VSCode =
                 | None -> ()
                 color.Set "green"
                 thickness.Set 1
-            Border.create [
-                // Border.borderBrush color.Current
-                // Border.borderThickness thickness.Current
-                Border.child (
-                    StackPanel.create [
-                        StackPanel.orientation Orientation.Horizontal
-                        StackPanel.onLostFocus (fun _ -> save ()) // 失焦就保存
-                        StackPanel.children [
-                            TextBox.create [
-                                TextBox.text text.Current
-                                TextBox.width 400
-                                TextBox.onTextChanged (fun t -> text.Set t)
-                            ]
-                            TextBox.create [
-                                TextBox.text version.Current
-                                TextBox.width 200
-                                TextBox.onTextChanged (fun t -> version.Set t)
-                            ]
-                            ToggleSwitch.create [
-                                ToggleSwitch.isChecked isX64.Current
-                                ToggleSwitch.onChecked (fun _ -> isX64.Set true)
-                                ToggleSwitch.onUnchecked (fun _ -> isX64.Set false)
-                            ]
-                            Button.create [
-                                Button.content "刪除"
-                                Button.onClick (fun _ ->
-                                    list.Set (List.filter (fun j -> j.Name <> i.Name) list.Current))
-                            ]
-                            Button.create [
-                                Button.content "更新"
-                                Button.onClick (fun _ -> save ())
-                            ]
-                            Button.create [
-                                Button.content "生成"
-                                Button.onClick (fun _ ->
-                                    let testArray = text.Current |> String.split "."
-                                    if (testArray |> Array.length) >= 2 then
-                                        let url =
-                                            let ver =
-                                                version.Current |> String.trimStart 'v'
-                                            let host = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers"
-                                            sprintf "%s/%s/vsextensions/%s/%s/vspackage" host testArray[0] testArray[1] ver
-                                        let result_ =
-                                            match isX64.Current with
-                                            | true ->
-                                                sprintf "%s?targetPlatform=win32-x64" url
-                                            | false -> sprintf "%s" url
-                                        result.Set result_
-                                        ClipboardService.SetText result_
-                                    else
-                                        ClipboardService.SetText ""
-                                )
-                            ]
-                        ]
+            // Border.create [
+            //     // Border.borderBrush color.Current
+            //     // Border.borderThickness thickness.Current
+            //     Border.child (
+            StackPanel.create [
+                StackPanel.orientation Orientation.Horizontal
+                StackPanel.onLostFocus (fun _ -> save ()) // 失焦就保存
+                StackPanel.spacing 5
+                StackPanel.children [
+                    TextBox.create [
+                        TextBox.text ""
+                        TextBox.width 200
+                        // TextBox.onTextChanged (fun t -> version.Set t)
                     ]
-                )
+                    TextBox.create [
+                        TextBox.text text.Current
+                        TextBox.width 400
+                        TextBox.onTextChanged (fun t -> text.Set t)
+                    ]
+                    TextBox.create [
+                        TextBox.text version.Current
+                        TextBox.width 200
+                        TextBox.onTextChanged (fun t -> version.Set t)
+                    ]
+                    ToggleSwitch.create [
+                        ToggleSwitch.isChecked isX64.Current
+                        ToggleSwitch.onChecked (fun _ -> isX64.Set true)
+                        ToggleSwitch.onUnchecked (fun _ -> isX64.Set false)
+                    ]
+                    Button.create [
+                        Button.content "刪除"
+                        Button.onClick (fun _ ->
+                            list.Set (List.filter (fun j -> j.Name <> i.Name) list.Current))
+                    ]
+                    Button.create [
+                        Button.content "更新"
+                        Button.onClick (fun _ -> save ())
+                    ]
+                    Button.create [
+                        Button.content "生成"
+                        Button.onClick (fun _ ->
+                            let testArray = text.Current |> String.split "."
+                            if (testArray |> Array.length) >= 2 then
+                                let url =
+                                    let ver =
+                                        version.Current |> String.trimStart 'v'
+                                    let host = "https://marketplace.visualstudio.com/_apis/public/gallery/publishers"
+                                    sprintf "%s/%s/vsextensions/%s/%s/vspackage" host testArray[0] testArray[1] ver
+                                let result_ =
+                                    match isX64.Current with
+                                    | true ->
+                                        sprintf "%s?targetPlatform=win32-x64" url
+                                    | false -> sprintf "%s" url
+                                result.Set result_
+                                ClipboardService.SetText result_
+                            else
+                                ClipboardService.SetText ""
+                        )
+                    ]
+                ]
+                //     ]
+                // )
             ]
         )
 
@@ -101,6 +107,7 @@ module VSCode =
         Component.create (
             "vscodeComponet",
             fun ctx ->
+
             let list: IWritable<Extension list> = ctx.useState []
             let result = ctx.useState ""
             let saveJson () =
@@ -116,11 +123,12 @@ module VSCode =
             )
             let newItem : Extension =  { Name = ""; Version = ""; IsX64 = false }
 
-            StackPanel.create [
-                StackPanel.children [
-                    StackPanel.create [
-                        StackPanel.orientation Orientation.Horizontal
-                        StackPanel.children [
+            DockPanel.create [
+                DockPanel.children [
+                    DockPanel.create [
+                        // StackPanel.orientation Orientation.Horizontal
+                        DockPanel.dock Dock.Top
+                        DockPanel.children [
                             Button.create [
                                 Button.content "新增"
                                 Button.onClick (fun _ ->
@@ -133,15 +141,34 @@ module VSCode =
                             ]
                             TextBox.create [
                                 TextBox.text result.Current
-                                TextBox.width 1000
+                                // TextBox.width 1000
                             ]
                         ]
                     ]
+
+                    DockPanel.create [
+                        DockPanel.dock Dock.Top
+                        DockPanel.children [
+                            Button.create [
+                                Button.dock Dock.Left
+                                Button.content "过滤"
+                            ]
+                            RadioButton.create [
+                                RadioButton.content "名称"
+                                RadioButton.isChecked true
+                            ]
+                            RadioButton.create [
+                                RadioButton.content "标识符"
+                            ]
+                            TextBox.create [
+                                TextBox.dock Dock.Left
+                                TextBox.text ""
+                            ]
+                        ]
+                    ]
+
                     ListBox.create [
-                        ListBox.verticalScrollBarVisibility ScrollBarVisibility.Visible
-                        ListBox.horizontalScrollBarVisibility ScrollBarVisibility.Visible
-                        ListBox.horizontalAlignment HorizontalAlignment.Stretch
-                        ListBox.verticalAlignment VerticalAlignment.Stretch
+                        ListBox.dock Dock.Top
                         ListBox.viewItems (
                             list.Current
                             |> List.map (stack list result)

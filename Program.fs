@@ -14,6 +14,7 @@ open System.Collections.ObjectModel
 open Avalonia.Data
 // open Primitives
 open Common
+open TextCopy
 
 type Person (name, age, male) =
     member val Name = name with get, set
@@ -92,6 +93,36 @@ module Main =
             ]
         )
 
+    let itemView (k: string) : Types.IView =
+        Component.create (k, fun ctx->
+            let text = ctx.useState k
+            let version = ctx.useState k
+            StackPanel.create [
+                StackPanel.orientation Orientation.Horizontal
+                StackPanel.spacing 5
+                StackPanel.children [
+                    TextBox.create [
+                        TextBox.text text.Current
+                        TextBox.width 400
+                        TextBox.onTextChanged (fun t -> text.Set t)
+                    ]
+                    TextBox.create [
+                        TextBox.text version.Current
+                        TextBox.width 200
+                        TextBox.onTextChanged (fun t -> version.Set t)
+                    ]
+                    ToggleSwitch.create [
+                        ToggleSwitch.isChecked true
+                    ]
+                    Button.create [
+                        Button.content "生成"
+                        Button.onClick (fun _ ->
+                            ClipboardService.SetText (text.Current + "." + version.Current))
+                    ]
+                ]
+            ]
+        )
+
     let view () =
         Component(fun ctx ->
             TabControl.create [
@@ -107,6 +138,42 @@ module Main =
                         TabItem.header "DataGrid"
                         TabItem.content (
                             gridComponent()
+                        )
+                    ]
+                    TabItem.create [
+                        TabItem.header "ListBox"
+                        TabItem.content (
+                            DockPanel.create [
+                                // DockPanel.orientation Orientation.Vertical
+                                DockPanel.dock Dock.Top
+                                DockPanel.children [
+                                    ListBox.create [
+                                        ListBox.viewItems (
+                                            [ 1..50 ]
+                                            |> List.map (fun i ->
+                                                itemView(string i)
+                                            )
+                                        )
+                                    ]
+                                ]
+                            ]
+                        )
+                    ]
+                    TabItem.create [
+                        TabItem.header "Panel"
+                        TabItem.content (
+                            DockPanel.create [
+                                DockPanel.children [
+                                    TextBox.create [
+                                        TextBox.text "1"
+                                        TextBox.dock Dock.Top
+                                    ]
+                                    TextBox.create [
+                                        TextBox.text "2"
+                                        TextBox.dock Dock.Top
+                                    ]
+                                ]
+                            ]
                         )
                     ]
                 ]
