@@ -33,7 +33,7 @@ module Main =
                             Person("Bob", 22, true)
                         ]
                     )
-                    
+
             let selectedItem = ctx.useState None
 
             DockPanel.create [

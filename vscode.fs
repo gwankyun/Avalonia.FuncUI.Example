@@ -12,22 +12,32 @@ module VSCode =
     type Extension =
         {
             Name: string
+            Identify: string
             Version: string
             IsX64: bool
         }
 
+    // type ExtensionExt =
+    //     {
+    //         Name: string
+    //         Version: string
+    //         IsX64: bool
+    //     }
+
+    // type CurrentType = Extension
+
     let stack (list: IWritable<Extension list>) (result: IWritable<string>) (i: Extension) : Types.IView =
-        Component.create (i.Name, fun ctx ->
-            let text = ctx.useState i.Name
+        Component.create (i.Identify, fun ctx ->
+            let text = ctx.useState i.Identify
             let version = ctx.useState i.Version
             let isX64 = ctx.useState i.IsX64
             let color = ctx.useState "blue"
             let thickness = ctx.useState 1
-            let currentItem () =
-                { Name = text.Current; Version = version.Current; IsX64 = isX64.Current }
+            let currentItem () : Extension =
+                { Name = ""; Identify = text.Current; Version = version.Current; IsX64 = isX64.Current }
             let save () =
                 let current = list.Current
-                let idx = List.tryFindIndex (fun x -> x.Name = i.Name) current
+                let idx = List.tryFindIndex (fun (x : Extension) -> x.Identify = i.Identify) current
                 match idx with
                 | Some(index) ->
                     list.Set (List.updateAt index (currentItem ()) current)
@@ -66,7 +76,7 @@ module VSCode =
                     Button.create [
                         Button.content "刪除"
                         Button.onClick (fun _ ->
-                            list.Set (List.filter (fun j -> j.Name <> i.Name) list.Current))
+                            list.Set (List.filter (fun j -> j.Identify <> i.Identify) list.Current))
                     ]
                     Button.create [
                         Button.content "更新"
@@ -111,7 +121,9 @@ module VSCode =
             let list: IWritable<Extension list> = ctx.useState []
             let result = ctx.useState ""
             let saveJson () =
-                let json = JsonSerializer.serialize list.Current
+                let json =
+                    list.Current
+                    |> JsonSerializer.serialize
                 File.writeAllText jsonPath json
             ctx.useEffect (
                 (fun _ ->
@@ -121,7 +133,7 @@ module VSCode =
                     list.Set <| JsonSerializer.deserialize json),
                     [EffectTrigger.AfterInit]
             )
-            let newItem : Extension =  { Name = ""; Version = ""; IsX64 = false }
+            let newItem : Extension =  { Name = ""; Identify =""; Version = ""; IsX64 = false }
 
             DockPanel.create [
                 DockPanel.children [
@@ -154,10 +166,12 @@ module VSCode =
                                 Button.content "过滤"
                             ]
                             RadioButton.create [
+                                RadioButton.groupName "type"
                                 RadioButton.content "名称"
                                 RadioButton.isChecked true
                             ]
                             RadioButton.create [
+                                RadioButton.groupName "type"
                                 RadioButton.content "标识符"
                             ]
                             TextBox.create [
