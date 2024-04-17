@@ -29,12 +29,13 @@ module VSCode =
     let stack (list: IWritable<Extension list>) (result: IWritable<string>) (i: Extension) : Types.IView =
         Component.create (i.Identify, fun ctx ->
             let text = ctx.useState i.Identify
+            let name = ctx.useState i.Name
             let version = ctx.useState i.Version
             let isX64 = ctx.useState i.IsX64
             let color = ctx.useState "blue"
             let thickness = ctx.useState 1
             let currentItem () : Extension =
-                { Name = ""; Identify = text.Current; Version = version.Current; IsX64 = isX64.Current }
+                { Name = name.Current; Identify = text.Current; Version = version.Current; IsX64 = isX64.Current }
             let save () =
                 let current = list.Current
                 let idx = List.tryFindIndex (fun (x : Extension) -> x.Identify = i.Identify) current
@@ -54,9 +55,9 @@ module VSCode =
                 StackPanel.spacing 5
                 StackPanel.children [
                     TextBox.create [
-                        TextBox.text ""
+                        TextBox.text name.Current
                         TextBox.width 200
-                        // TextBox.onTextChanged (fun t -> version.Set t)
+                        TextBox.onTextChanged (fun t -> name.Set t)
                     ]
                     TextBox.create [
                         TextBox.text text.Current
@@ -185,6 +186,7 @@ module VSCode =
                         ListBox.dock Dock.Top
                         ListBox.viewItems (
                             list.Current
+                            |> List.sortBy _.Name
                             |> List.map (stack list result)
                         )
                     ]
