@@ -231,8 +231,12 @@ module Main =
                                 TabItem.header "Slider"
                                 TabItem.content (
                                     Slider.create [
-                                    //     Slider.minimum 0.0
-                                    //     Slider.maximum 100.0
+                                        Slider.minimum (double 0)
+                                        Slider.maximum (double 100)
+                                        Slider.largeChange 100.0
+                                        Slider.smallChange 100.0
+                                        Slider.tickFrequency (double 1)
+                                        Slider.isSnapToTickEnabled true
                                     //     // Slider.smallChange 1.0
                                     //     Slider.value slider.Current
                                     //     Slider.tickFrequency 1.0

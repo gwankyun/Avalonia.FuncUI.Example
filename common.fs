@@ -23,6 +23,9 @@ module String =
     let trimStart (c: char) (s: string) =
         s.TrimStart(c)
 
+    let toLower (str: string) =
+        str.ToLower()
+
 module Directory =
     let current =
         Directory.GetCurrentDirectory()

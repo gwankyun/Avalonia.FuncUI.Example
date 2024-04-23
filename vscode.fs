@@ -186,7 +186,7 @@ module VSCode =
                         ListBox.dock Dock.Top
                         ListBox.viewItems (
                             list.Current
-                            |> List.sortBy _.Name
+                            |> List.sortBy _.Name.ToLower()
                             |> List.map (stack list result)
                         )
                     ]
