@@ -124,6 +124,20 @@ module Main =
         )
 
     let view () =
+        let panelChildren: Types.IView List = [
+            TextBox.create [
+                TextBox.text "1"
+                TextBox.dock Dock.Top
+            ]
+            TextBox.create [
+                TextBox.text "2"
+                TextBox.dock Dock.Top
+            ]
+            TextBox.create [
+                TextBox.text "3"
+                TextBox.dock Dock.Top
+            ]
+        ]
         Component(fun ctx ->
             TabControl.create [
                 TabControl.tabStripPlacement Dock.Left
@@ -160,17 +174,26 @@ module Main =
                         )
                     ]
                     TabItem.create [
-                        TabItem.header "Panel"
+                        TabItem.header "佈局"
                         TabItem.content (
-                            DockPanel.create [
-                                DockPanel.children [
-                                    TextBox.create [
-                                        TextBox.text "1"
-                                        TextBox.dock Dock.Top
+                            TabControl.create [
+                                TabControl.tabStripPlacement Dock.Top
+                                TabControl.viewItems [
+                                    TabItem.create [
+                                        TabItem.header "DockPanel"
+                                        TabItem.content (
+                                            DockPanel.create [
+                                                DockPanel.children panelChildren
+                                            ]
+                                        )
                                     ]
-                                    TextBox.create [
-                                        TextBox.text "2"
-                                        TextBox.dock Dock.Top
+                                    TabItem.create [
+                                        TabItem.header "StackPanel"
+                                        TabItem.content (
+                                            StackPanel.create [
+                                                StackPanel.children panelChildren
+                                            ]
+                                        )
                                     ]
                                 ]
                             ]

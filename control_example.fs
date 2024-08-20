@@ -91,9 +91,9 @@ module ControlExample =
                                 TabItem.header "ProgressBar"
                                 TabItem.content (
                                     ProgressBar.create [
-                                        ProgressBar.value progressBar.Current
-                                        ProgressBar.minimum 0
-                                        ProgressBar.maximum 100
+                                        // ProgressBar.value progressBar.Current
+                                        ProgressBar.value 50.
+                                        ProgressBar.maximum 100.
                                         // ProgressBar.onValueChanged (fun x -> ())
                                     ]
                                 )
@@ -118,12 +118,19 @@ module ControlExample =
                                 TabItem.header "Slider"
                                 TabItem.content (
                                     Slider.create [
-                                        Slider.minimum (double 0)
-                                        Slider.maximum (double 100)
-                                        Slider.largeChange 100.0
-                                        Slider.smallChange 100.0
-                                        Slider.tickFrequency (double 1)
-                                        Slider.isSnapToTickEnabled true
+                                        // Slider.minimum (double 0)
+                                        // Slider.maximum (double 100)
+                                        // Slider.largeChange 100.0
+                                        // Slider.smallChange 100.0
+                                        // Slider.tickFrequency (double 1)
+                                        // Slider.isSnapToTickEnabled true
+                                        // Slider.minimum 0.
+                                        // Slider.pers
+                                        // Slider.maximum 100.
+                                        // Slider.value slider.Current
+                                        // Slider.onValueChanged (fun n ->
+                                        //     printfn "Slider: %f" n
+                                        //     slider.Set n)
                                     //     // Slider.smallChange 1.0
                                     //     Slider.value slider.Current
                                     //     Slider.tickFrequency 1.0
@@ -168,6 +175,40 @@ module ControlExample =
                                 TabItem.header "ToggleSwitch"
                                 TabItem.content (
                                     ToggleSwitch.create [
+                                    ]
+                                )
+                            ]
+                            TabItem.create [
+                                TabItem.header "Menu"
+                                TabItem.content (
+                                    Menu.create [
+                                        Menu.viewItems [
+                                            MenuItem.create [
+                                                MenuItem.header "文件"
+                                                MenuItem.viewItems [
+                                                    MenuItem.create [
+                                                        MenuItem.header "新建文件"
+                                                    ]
+                                                    MenuItem.create [
+                                                        MenuItem.header "打開文件"
+                                                    ]
+                                                ]
+                                            ]
+                                            MenuItem.create [
+                                                MenuItem.header "編輯"
+                                                MenuItem.viewItems [
+                                                    MenuItem.create [
+                                                        MenuItem.header "剪切"
+                                                    ]
+                                                    MenuItem.create [
+                                                        MenuItem.header "複製"
+                                                    ]
+                                                    MenuItem.create [
+                                                        MenuItem.header "黏貼"
+                                                    ]
+                                                ]
+                                            ]
+                                        ]
                                     ]
                                 )
                             ]
