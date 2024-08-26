@@ -7,24 +7,10 @@ open Avalonia.Layout
 open Avalonia.Controls.Primitives
 open TextCopy
 open Common
+open Microsoft.Data.Sqlite
+open DatabaseManage
 
 module VSCode =
-    type Extension =
-        {
-            Name: string
-            Identify: string
-            Version: string
-            IsX64: bool
-        }
-
-    // type ExtensionExt =
-    //     {
-    //         Name: string
-    //         Version: string
-    //         IsX64: bool
-    //     }
-
-    // type CurrentType = Extension
 
     let stack (list: IWritable<Extension list>) (result: IWritable<string>) (i: Extension) : Types.IView =
         Component.create (i.Identify, fun ctx ->
@@ -121,18 +107,36 @@ module VSCode =
 
             let list: IWritable<Extension list> = ctx.useState []
             let result = ctx.useState ""
+            printfn "current: %s" Directory.current
+            printfn "baseDir: %s" Directory.baseDir
+            let dbPath = Path.join Directory.current "vscode.db"
+
             let saveJson () =
                 let json =
                     list.Current
                     |> JsonSerializer.serialize
                 File.writeAllText jsonPath json
+
+                // 寫入數據庫
+                use connection = new SqliteConnection(
+                    "Data Source=" + dbPath)
+                connection.Open()
+                DatabaseManage.deleteAll connection
+                DatabaseManage.insertMany connection list.Current
+
             ctx.useEffect (
                 (fun _ ->
+                    // 啟動時使用數據庫
                     if File.exists jsonPath |> not then
                         saveJson ()
                     let json = File.readAllText jsonPath
-                    list.Set <| JsonSerializer.deserialize json),
-                    [EffectTrigger.AfterInit]
+                    list.Set <| JsonSerializer.deserialize json
+
+                    use connection = new SqliteConnection(
+                        "Data Source=" + dbPath)
+                    connection.Open()
+                    list.Set <| DatabaseManage.selectAll connection
+                    ), [EffectTrigger.AfterInit]
             )
             let newItem : Extension =  { Name = ""; Identify =""; Version = ""; IsX64 = false }
 

@@ -9,6 +9,7 @@
   <ItemGroup>
     <Compile Include="common.fs" />
     <Compile Include="control_example.fs" />
+    <Compile Include="db_manager.fs" />
     <Compile Include="vscode.fs" />
     <Compile Include="Program.fs" />
   </ItemGroup>
