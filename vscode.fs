@@ -127,10 +127,10 @@ module VSCode =
             ctx.useEffect (
                 (fun _ ->
                     // 啟動時使用數據庫
-                    if File.exists jsonPath |> not then
-                        saveJson ()
-                    let json = File.readAllText jsonPath
-                    list.Set <| JsonSerializer.deserialize json
+                    // if File.exists jsonPath |> not then
+                    //     saveJson ()
+                    // let json = File.readAllText jsonPath
+                    // list.Set <| JsonSerializer.deserialize json
 
                     use connection = new SqliteConnection(
                         "Data Source=" + dbPath)
