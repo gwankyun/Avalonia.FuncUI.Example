@@ -15,6 +15,7 @@ open Avalonia.Data
 // open Primitives
 open Common
 open TextCopy
+open FSLogger
 
 type Person (name, age, male) =
     member val Name = name with get, set
@@ -232,6 +233,10 @@ module Program =
 
     [<EntryPoint>]
     let main(args: string[]) =
+        let logger log = Logger.ColorConsole
+        let log = logger ""
+        log.I "info"
+        log.W "warn"
         AppBuilder
             .Configure<App>()
             .UsePlatformDetect()
