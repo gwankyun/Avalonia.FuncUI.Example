@@ -233,10 +233,9 @@ module Program =
 
     [<EntryPoint>]
     let main(args: string[]) =
-        let logger log = Logger.ColorConsole
-        let log = logger ""
-        log.I "info"
-        log.W "warn"
+        let logger = Logger.ColorConsole
+        logger.I "info"
+        logger.W "warn"
         AppBuilder
             .Configure<App>()
             .UsePlatformDetect()
