@@ -6,7 +6,7 @@ module File =
     let exists path =
         File.Exists path
 
-    let writeAllText path contents =
+    let writeAllText path (contents: string) =
         File.WriteAllText(path, contents)
 
     let readAllText path =
@@ -29,7 +29,7 @@ module String =
 module Directory =
     let current =
         Directory.GetCurrentDirectory()
-    
+
     let baseDir =
         System.AppContext.BaseDirectory
 
