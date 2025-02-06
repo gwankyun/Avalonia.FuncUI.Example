@@ -14,6 +14,36 @@ module ControlExample =
         Component(fun ctx ->
             let progressBar = ctx.useState 0.0
             let slider = ctx.useState 50.0
+            let menu =
+                Menu.create [
+                    Menu.viewItems [
+                        MenuItem.create [
+                            MenuItem.header "文件"
+                            MenuItem.viewItems [
+                                MenuItem.create [
+                                    MenuItem.header "新建文件"
+                                ]
+                                MenuItem.create [
+                                    MenuItem.header "打開文件"
+                                ]
+                            ]
+                        ]
+                        MenuItem.create [
+                            MenuItem.header "編輯"
+                            MenuItem.viewItems [
+                                MenuItem.create [
+                                    MenuItem.header "剪切"
+                                ]
+                                MenuItem.create [
+                                    MenuItem.header "複製"
+                                ]
+                                MenuItem.create [
+                                    MenuItem.header "黏貼"
+                                ]
+                            ]
+                        ]
+                    ]
+                ]
             StackPanel.create [
                 StackPanel.orientation Orientation.Horizontal
                 StackPanel.children [
@@ -181,35 +211,7 @@ module ControlExample =
                             TabItem.create [
                                 TabItem.header "Menu"
                                 TabItem.content (
-                                    Menu.create [
-                                        Menu.viewItems [
-                                            MenuItem.create [
-                                                MenuItem.header "文件"
-                                                MenuItem.viewItems [
-                                                    MenuItem.create [
-                                                        MenuItem.header "新建文件"
-                                                    ]
-                                                    MenuItem.create [
-                                                        MenuItem.header "打開文件"
-                                                    ]
-                                                ]
-                                            ]
-                                            MenuItem.create [
-                                                MenuItem.header "編輯"
-                                                MenuItem.viewItems [
-                                                    MenuItem.create [
-                                                        MenuItem.header "剪切"
-                                                    ]
-                                                    MenuItem.create [
-                                                        MenuItem.header "複製"
-                                                    ]
-                                                    MenuItem.create [
-                                                        MenuItem.header "黏貼"
-                                                    ]
-                                                ]
-                                            ]
-                                        ]
-                                    ]
+                                    menu
                                 )
                             ]
                         ]
