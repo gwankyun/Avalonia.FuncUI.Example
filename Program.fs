@@ -138,7 +138,58 @@ module Main =
                 TextBox.text "3"
                 TextBox.dock Dock.Top
             ]
+            TextBox.create [
+                TextBox.text "4"
+                TextBox.dock Dock.Top
+            ]
+            TextBox.create [
+                TextBox.text "5"
+                TextBox.dock Dock.Top
+            ]
+            TextBox.create [
+                TextBox.text "6"
+                TextBox.dock Dock.Top
+            ]
+            TextBox.create [
+                TextBox.text "7"
+                TextBox.dock Dock.Top
+            ]
+            TextBox.create [
+                TextBox.text "8"
+                TextBox.dock Dock.Top
+            ]
+            TextBox.create [
+                TextBox.text "9"
+                TextBox.dock Dock.Top
+            ]
         ]
+        let panel = 
+            TabItem.create [
+                TabItem.header "佈局"
+                TabItem.content (
+                    TabControl.create [
+                        TabControl.tabStripPlacement Dock.Top
+                        TabControl.viewItems [
+                            TabItem.create [
+                                TabItem.header "DockPanel"
+                                TabItem.content (
+                                    DockPanel.create [
+                                        DockPanel.children panelChildren
+                                    ]
+                                )
+                            ]
+                            TabItem.create [
+                                TabItem.header "StackPanel"
+                                TabItem.content (
+                                    StackPanel.create [
+                                        StackPanel.children panelChildren
+                                    ]
+                                )
+                            ]
+                        ]
+                    ]
+                )
+            ]
         Component(fun ctx ->
             TabControl.create [
                 TabControl.tabStripPlacement Dock.Left
@@ -174,32 +225,7 @@ module Main =
                             ]
                         )
                     ]
-                    TabItem.create [
-                        TabItem.header "佈局"
-                        TabItem.content (
-                            TabControl.create [
-                                TabControl.tabStripPlacement Dock.Top
-                                TabControl.viewItems [
-                                    TabItem.create [
-                                        TabItem.header "DockPanel"
-                                        TabItem.content (
-                                            DockPanel.create [
-                                                DockPanel.children panelChildren
-                                            ]
-                                        )
-                                    ]
-                                    TabItem.create [
-                                        TabItem.header "StackPanel"
-                                        TabItem.content (
-                                            StackPanel.create [
-                                                StackPanel.children panelChildren
-                                            ]
-                                        )
-                                    ]
-                                ]
-                            ]
-                        )
-                    ]
+                    panel
                     TabItem.create [
                         TabItem.header "控件"
                         TabItem.content (
@@ -220,7 +246,7 @@ type App() =
     inherit Application()
 
     override this.Initialize() =
-        this.Styles.Add (FluentTheme())
+        this.Styles.Add <| FluentTheme()
         this.RequestedThemeVariant <- Styling.ThemeVariant.Dark
 
     override this.OnFrameworkInitializationCompleted() =
