@@ -190,6 +190,55 @@ module Main =
                     ]
                 )
             ]
+        let listManeger =
+            TabItem.create [
+                TabItem.header "ListBox"
+                TabItem.content (
+                    DockPanel.create [
+                        // DockPanel.orientation Orientation.Vertical
+                        DockPanel.dock Dock.Top
+                        DockPanel.children [
+                            ListBox.create [
+                                ListBox.viewItems (
+                                    [ 1..10 ]
+                                    |> List.map (fun i ->
+                                        // itemView(string i)
+                                        let k = string i
+                                        Component.create (k, fun ctx->
+                                            let text = ctx.useState k
+                                            // let version = ctx.useState k
+                                            StackPanel.create [
+                                                StackPanel.orientation Orientation.Horizontal
+                                                StackPanel.spacing 5
+                                                StackPanel.children [
+                                                    TextBox.create [
+                                                        TextBox.text text.Current
+                                                        TextBox.width 400
+                                                        TextBox.onTextChanged (fun t -> text.Set t)
+                                                    ]
+                                                    // TextBox.create [
+                                                    //     TextBox.text version.Current
+                                                    //     TextBox.width 200
+                                                    //     TextBox.onTextChanged (fun t -> version.Set t)
+                                                    // ]
+                                                    // ToggleSwitch.create [
+                                                    //     ToggleSwitch.isChecked true
+                                                    // ]
+                                                    // Button.create [
+                                                    //     Button.content "生成"
+                                                    //     Button.onClick (fun _ ->
+                                                    //         ClipboardService.SetText (text.Current + "." + version.Current))
+                                                    // ]
+                                                ]
+                                            ]
+                                        )
+                                    )
+                                )
+                            ]
+                        ]
+                    ]
+                )
+            ]
         Component(fun ctx ->
             TabControl.create [
                 TabControl.tabStripPlacement Dock.Left
@@ -232,6 +281,7 @@ module Main =
                             ControlExample.controlView()
                         )
                     ]
+                    listManeger
                 ]
             ]
         )
