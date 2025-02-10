@@ -282,6 +282,44 @@ module Main =
                         )
                     ]
                     listManeger
+                    TabItem.create [
+                        TabItem.header "自定義控件"
+                        TabItem.content (
+                            Component.create ("custom", fun ctx->
+                                let text = ctx.useState ""
+                                let list = ctx.useState<string list> []
+                                StackPanel.create [
+                                    StackPanel.children [
+                                        TextBox.create [
+                                            TextBox.text text.Current
+                                        ]
+                                        Button.create [
+                                            Button.content "Button"
+                                            Button.onClick (fun _ ->
+                                                let t = text.Current
+                                                list.Set <| t :: list.Current
+                                                // text.Set ""
+                                                printfn $"list: %A{list.Current}"
+                                                )
+                                        ]
+                                        ListBox.create [
+                                            ListBox.viewItems (
+                                                list.Current
+                                                |> List.map (fun i ->
+                                                    // itemView(string i)
+                                                    Button.create [
+                                                        Button.content i
+                                                        // Button.onClick (fun _ -> text.Set "Update")
+                                                        // Button.
+                                                    ]
+                                                )
+                                            )
+                                        ]
+                                    ]
+                                ]
+                            )
+                        )
+                    ]
                 ]
             ]
         )
