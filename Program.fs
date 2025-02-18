@@ -240,6 +240,7 @@ module Main =
                 )
             ]
         Component(fun ctx ->
+            let customState = ctx.useState 0
             TabControl.create [
                 TabControl.tabStripPlacement Dock.Left
                 TabControl.viewItems [
@@ -285,35 +286,18 @@ module Main =
                     TabItem.create [
                         TabItem.header "自定義控件"
                         TabItem.content (
-                            Component.create ("custom", fun ctx->
-                                let text = ctx.useState ""
-                                let list = ctx.useState<string list> []
-                                StackPanel.create [
-                                    StackPanel.children [
-                                        TextBox.create [
-                                            TextBox.text text.Current
-                                        ]
+                            Component.create ("custom", fun ctx ->
+                                let state = ctx.useState 0
+                                DockPanel.create [
+                                    DockPanel.children [
                                         Button.create [
-                                            Button.content "Button"
                                             Button.onClick (fun _ ->
-                                                let t = text.Current
-                                                list.Set <| t :: list.Current
-                                                // text.Set ""
-                                                printfn $"list: %A{list.Current}"
-                                                )
+                                                let current = state.Current + 1
+                                                state.Set current)
+                                            Button.content "+"
                                         ]
-                                        ListBox.create [
-                                            ListBox.viewItems (
-                                                list.Current
-                                                |> List.map (fun i ->
-                                                    // itemView(string i)
-                                                    Button.create [
-                                                        Button.content i
-                                                        // Button.onClick (fun _ -> text.Set "Update")
-                                                        // Button.
-                                                    ]
-                                                )
-                                            )
+                                        TextBlock.create [
+                                            TextBlock.text (string state.Current)
                                         ]
                                     ]
                                 ]
@@ -324,11 +308,29 @@ module Main =
             ]
         )
 
+    let otherView (n: int) =
+        Component(fun ctx ->
+            let state = ctx.useState n
+            let current = state.Current
+            DockPanel.create [
+                DockPanel.children [
+                    Button.create [
+                        Button.onClick (fun _ -> state.Set (state.Current + 1))
+                        Button.content "+"
+                    ]
+                    TextBlock.create [
+                        TextBlock.text (string state.Current)
+                    ]
+                ]
+            ]
+        )
+
 type MainWindow() =
     inherit HostWindow()
     do
         base.Title <- "Counter Example"
         base.Content <- Main.view ()
+        // base.Content <- Main.otherView (0)
 
 type App() =
     inherit Application()

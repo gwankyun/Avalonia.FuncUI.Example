@@ -1,6 +1,9 @@
 ﻿namespace Common
 open System.IO
 open System.Text.Json
+open Avalonia.FuncUI
+open Avalonia.Controls
+open Avalonia.FuncUI.DSL
 
 module File =
     let exists path =
@@ -39,3 +42,21 @@ module JsonSerializer =
 
     let deserialize (json: string) =
         JsonSerializer.Deserialize<'a> json
+
+module Control =
+    let example () =
+        Component.create ("custom", fun ctx ->
+            let state = ctx.useState 0
+            let current = state.Current
+            DockPanel.create [
+                DockPanel.children [
+                    Button.create [
+                        Button.onClick (fun _ -> state.Set (current + 1))
+                        Button.content "+"
+                    ]
+                    TextBlock.create [
+                        TextBlock.text (string state.Current)
+                    ]
+                ]
+            ]
+        )
