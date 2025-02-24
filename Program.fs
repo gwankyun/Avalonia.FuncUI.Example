@@ -22,7 +22,96 @@ type Person (name, age, male) =
     member val Age = age with get, set
     member val IsMale = male with get, set
 
+module ComponentExample =
 
+    type ColorViews () =
+
+        static let random = System.Random()
+
+        static let randomColor () =
+            System.String.Format("#{0:X6}", random.Next(0x1000000))
+
+        static member randomColorView () =
+            Component.create ("randomColorView", fun ctx ->
+                let color = ctx.useState (randomColor())
+                
+                TextBlock.create [
+                    TextBlock.background color.Current
+                    TextBlock.text $"Color {color.Current}"
+                ]
+            )
+
+        static member mainView () =
+            Component (fun ctx ->
+                let isHidden = ctx.useState false
+
+                DockPanel.create [
+                    DockPanel.lastChildFill true
+                    DockPanel.children [
+
+                        Button.create [
+                            Button.content "hide button"
+                            Button.onClick (fun _ -> isHidden.Set true)
+                            Button.isVisible (not isHidden.Current)
+                        ]
+
+                        ColorViews.randomColorView ()
+                    ]
+                ]
+            )
+
+// module HookExample =
+//     let ComponentA id (value: IWritable<string>) =
+//         Component.create (id, fun ctx ->
+//             // Right here we can use ctx.usePassed to ensure we can both read/update a value
+//             let value = ctx.usePassed value
+//             StackPanel.create [
+//                 StackPanel.children [
+//                     TextBlock.create [
+//                         TextBlock.text $"This component can read and update this value: \"{value.Current}\""
+//                     ]
+//                     Button.create [
+//                         Button.content "Add 3"
+//                         Button.onClick (fun _ -> $"{value.Current}3" |> value.Set )
+//                     ]
+//                 ]
+//             ]
+//         )
+
+//     let ComponentB id (value: IReadable<string>) =
+//         Component.create (id, fun ctx ->
+//             // Right here we can use ctx.usePassedRead to ensure we can only read a value
+//             let value = ctx.usePassedRead value
+//             StackPanel.create [
+//                 StackPanel.children [
+//                     TextBlock.create [
+//                         TextBlock.text $"This component can only read this value: \"{value.Current}\""
+//                     ]
+//                 ]
+//             ]
+//         )
+
+//     let View =
+//         Component(fun ctx ->
+//             let value = ctx.useState "This is my value"
+//             StackPanel.create [
+//                 StackPanel.spacing 12.
+//                 StackPanel.children [
+//                     // here we can use our components with the existing value
+//                     // in other implementations these could also be called
+//                     // "Stores"
+//                     ComponentA "component-a" value
+//                     ComponentB "component-b" value
+//                     Button.create [
+//                         Button.content "I can add 4 from outside"
+//                         // since state is both readable and writable we can also
+//                         // modify the values from outside the child components
+//                         // as usual
+//                         Button.onClick (fun _ -> $"{value.Current}4" |> value.Set )
+//                     ]
+//                 ]
+//             ]
+//         )
 
 module Main =
     let gridComponent () =
@@ -239,6 +328,23 @@ module Main =
                     ]
                 )
             ]
+        let customControl =
+            Component.create ("custom", fun ctx ->
+                let state = ctx.useState 0
+                DockPanel.create [
+                    DockPanel.children [
+                        Button.create [
+                            Button.onClick (fun _ ->
+                                let current = state.Current + 1
+                                state.Set current)
+                            Button.content "+"
+                        ]
+                        TextBlock.create [
+                            TextBlock.text (string state.Current)
+                        ]
+                    ]
+                ]
+            )
         Component(fun ctx ->
             let customState = ctx.useState 0
             TabControl.create [
@@ -286,22 +392,13 @@ module Main =
                     TabItem.create [
                         TabItem.header "自定義控件"
                         TabItem.content (
-                            Component.create ("custom", fun ctx ->
-                                let state = ctx.useState 0
-                                DockPanel.create [
-                                    DockPanel.children [
-                                        Button.create [
-                                            Button.onClick (fun _ ->
-                                                let current = state.Current + 1
-                                                state.Set current)
-                                            Button.content "+"
-                                        ]
-                                        TextBlock.create [
-                                            TextBlock.text (string state.Current)
-                                        ]
-                                    ]
-                                ]
-                            )
+                            customControl
+                        )
+                    ]
+                    TabItem.create [
+                        TabItem.header "組件生命週期"
+                        TabItem.content (
+                            ComponentExample.ColorViews.mainView()
                         )
                     ]
                 ]
